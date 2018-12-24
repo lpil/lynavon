@@ -1,0 +1,53 @@
+version: '3.2'
+
+
+services:
+  db:
+    image: mysql/mysql-server:5.7
+    expose:
+    - "3306"
+    volumes:
+      - $PWD/mysql:/var/lib/mysql
+      - $PWD/conf/mysql:/etc/mysql:ro
+    environment:
+     - TZ=Europe/London
+     - MYSQL_USER=zmuser
+     - MYSQL_PASSWORD=zmpass
+     - MYSQL_DATABASE=zm
+     - MYSQL_ROOT_PASSWORD=mysqlpsswd
+     - MYSQL_ROOT_HOST=%
+  web:
+    image: quantumobject/docker-zoneminder
+    ports:
+    - "8080:80"
+    volumes:
+      - /var/empty
+      - $PWD/backups:/var/backups
+      - $PWD/zoneminder:/var/cache/zoneminder
+      - type: tmpfs
+        target: /dev/shm
+    environment:
+     - TZ=Europe/London
+     - VIRTUAL_HOST=zm.localhost, stream0.localhost
+     - SERVICE_PORTS="80"
+     - ZM_SERVER_HOST=node.0
+     - ZM_DB_HOST=db
+    depends_on:
+      - db
+  stream:
+    image: quantumobject/docker-zoneminder
+    volumes:
+      - /var/empty
+      - $PWD/backups:/var/backups
+      - $PWD/zoneminder:/var/cache/zoneminder
+      - type: tmpfs
+        target: /dev/shm
+    environment:
+     - TZ=Europe/London
+     - VIRTUAL_HOST=stream{{.Task.Slot}}.localhost
+     - SERVICE_PORTS="80"
+     - ZM_SERVER_HOST=node.{{.Task.Slot}}
+     - ZM_DB_HOST=db
+    depends_on:
+      - web
+
