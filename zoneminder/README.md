@@ -65,6 +65,12 @@ Now the ZM application is running on [localhost:9000/zm](localhost:9000/zm)
 
 ## Usage
 
+View the currently running containers like so:
+
+```
+docker container ls
+```
+
 The MySQL and ZM containers can be stopped like so:
 
 ```sh
